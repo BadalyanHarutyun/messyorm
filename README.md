@@ -1,2 +1,2 @@
 # messyorm
-messyorm is node.js orm
+messyorm is Node.js orm

@@ -6,4 +6,4 @@ class BaseModel {
     return await query.select('*').from(this.table)
   }
 }
-exports.module=BaseModel
+module.exports=BaseModel

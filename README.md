@@ -1,8 +1,20 @@
-# messyorm
-messyorm is Node.js orm based on knex querybuild
-# need to install mysql2,pg and etc driver manually.
-# In near future I will change it to  typescript.
-# usage by example 
+# MessyORM
+
+**MessyORM** is a lightweight ORM for Node.js built on top of the Knex query builder. It provides a simple and intuitive API for interacting with your database. **MessyORM** currently supports multiple database clients, but you'll need to install the specific driver for your database manually.
+
+## Features
+
+- Simple and easy-to-use API
+- Supports multiple databases via Knex
+- Flexible model configuration
+- Future migration to TypeScript
+
+## Installation
+
+Before using **MessyORM**, ensure that you've installed the necessary database drivers. For example, to use MySQL:
+
+```bash
+npm install mysql2
   first example 
     class Customers extends BaseModel {
         static table = 'customers'

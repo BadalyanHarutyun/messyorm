@@ -1,7 +1,7 @@
 # messyorm
 messyorm is Node.js orm based on knex querybuild
 # need to install mysql2,pg and etc driver manually.
-
+# In near future I will change it to  typescript.
 # usage by example 
   first example 
     class Customers extends BaseModel {

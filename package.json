@@ -1,6 +1,6 @@
 {
   "name": "messyorm",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Node.js orm",
   "main": "index.js",
   "scripts": {
@@ -20,8 +20,7 @@
   },
   "homepage": "https://github.com/BadalyanHarutyun/messyorm#readme",
   "dependencies": {
-    "knex": "^3.1.0",
-    "mysql2": "^3.11.0"
+    "knex": "^3.1.0"
   },
   "peerDependenciesMeta": {
     "tedious": {

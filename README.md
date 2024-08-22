@@ -4,10 +4,10 @@
 
 ## Features
 
-- Simple and easy-to-use API
-- Supports multiple databases via Knex
-- Flexible model configuration
-- Future migration to TypeScript
+-   Simple and easy-to-use API
+-   Supports multiple databases via Knex
+-   Flexible model configuration
+-   Future migration to TypeScript
 
 ## Installation
 
@@ -15,38 +15,58 @@ Before using **MessyORM**, ensure that you've installed the necessary database d
 
 ```bash
 npm install mysql2
-  first example 
-    class Customers extends BaseModel {
-        static table = 'customers'
-        static columns = ['state','country']
-        static config = {
-            client: 'mysql2',
-            connection: {
+import {BaseModel,Column,Entity} from 'messyorm'
+
+
+@Entity()
+class User extends BaseModel {
+    @Column()
+    name:string
+
+
+
+
+
+
+    static config = {
+        client: 'mysql2',
+          connection: {
               host: '127.0.0.1',
               port: 3306,
               user: 'your_username',
               password: 'your_password',
               database: 'your_database',
             },
-        }
-    } 
-    const data = await Customers.getAll({limit:2})
-    console.log(data)
+    }
+}
+const test = async()=> {
+  const data = await User.getAll({limit:1})
+  console.log(data)
+}
+test()
 you can not include columns static fields array it will get all columns
-second example 
-  class Orders extends BaseModel {
-    static table = 'orders';
-     static columns = ['state','country']
-        static config = {
-            client: 'mysql2',
-            connection: {
+second example
+@Entity()
+class Order extends BaseModel {
+    @Column()
+    orderNumber:string
+
+
+
+
+
+
+    static config = {
+        client: 'mysql2',
+          connection: {
               host: '127.0.0.1',
               port: 3306,
               user: 'your_username',
               password: 'your_password',
               database: 'your_database',
             },
-        }
-  }
+    }
+}
   const orderData = await Orders.getOne({ where: { orderNumber: 10103 } });
   console.log(orderData);
+```

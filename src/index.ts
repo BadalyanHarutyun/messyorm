@@ -56,7 +56,10 @@ class BaseModel {
     ): Promise<Partial<T>[] | undefined> {
         this.checkConfig();
         let query = knex(this.config);
-        let queryBuilder = query(this.table).where(options.where);
+        let queryBuilder = query(this.table);
+        if(options.where) {
+            queryBuilder.where(options.where)
+        }
         if (!this.columns) {
             return options?.limit
                 ? await queryBuilder.select('*').limit(options.limit)

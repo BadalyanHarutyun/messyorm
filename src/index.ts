@@ -2,7 +2,7 @@ import knex, { Knex } from 'knex';
 import { IOptionQuery } from './option.interface';
 import 'reflect-metadata';
 function Column() {
-    return function (target: Object, propertyKey: string | symbol): void {
+    return function (target: object, propertyKey: string | symbol): void {
         const constructor = target.constructor as typeof BaseModel & {
             columns?: { name: string; type: string }[];
         };
@@ -55,10 +55,10 @@ class BaseModel {
         options: IOptionQuery<T>
     ): Promise<Partial<T>[] | undefined> {
         this.checkConfig();
-        let query = knex(this.config);
-        let queryBuilder = query(this.table);
-        if(options.where) {
-            queryBuilder.where(options.where)
+        const query = knex(this.config);
+        const queryBuilder = query(this.table);
+        if (options.where) {
+            queryBuilder.where(options.where);
         }
         if (!this.columns) {
             return options?.limit
@@ -86,8 +86,8 @@ class BaseModel {
         options: IOptionQuery<T>
     ): Promise<Partial<T>> {
         this.checkConfig();
-        let query = knex(this.config);
-        let queryBuilder = query(this.table);
+        const query = knex(this.config);
+        const queryBuilder = query(this.table);
         return options?.where
             ? await queryBuilder.where(options.where).first()
             : await queryBuilder.first();

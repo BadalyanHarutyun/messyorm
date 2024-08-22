@@ -2,9 +2,16 @@
   "name": "messyorm",
   "version": "1.0.4",
   "description": "Node.js orm",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint  'src/**/*.ts'",
+    "build": "tsup"
   },
   "repository": {
     "type": "git",
@@ -20,7 +27,8 @@
   },
   "homepage": "https://github.com/BadalyanHarutyun/messyorm#readme",
   "dependencies": {
-    "knex": "^3.1.0"
+    "knex": "^3.1.0",
+    "reflect-metadata": "^0.2.2"
   },
   "peerDependenciesMeta": {
     "tedious": {
@@ -44,5 +52,16 @@
     "better-sqlite3": {
       "optional": true
     }
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.2.0",
+    "@typescript-eslint/parser": "^8.2.0",
+    "eslint": "^9.9.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.2.4",
+    "typescript": "^5.5.4"
   }
 }

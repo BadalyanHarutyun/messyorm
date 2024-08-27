@@ -29,7 +29,6 @@ function Column() {
 
 function Entity(name?: string) {
     return function (target: Function): void {
-        console.log(312, target.name);
         // Check if name is provided
         if (name) {
             // Use the provided name as the table name
@@ -52,42 +51,58 @@ class BaseModel {
         }
     }
     static async getAll<T extends BaseModel>(
+        this: new () => T,
         options: IOptionQuery<T>
-    ): Promise<Partial<T>[] | undefined> {
-        this.checkConfig();
-        const query = knex(this.config);
-        const queryBuilder = query(this.table);
+    ): Promise<Array<Partial<T>>> {
+        const subClass = this as unknown as typeof BaseModel;
+        subClass.checkConfig();
+        const query = knex(subClass.config);
+        const queryBuilder = query(subClass.table);
         if (options.where) {
             queryBuilder.where(options.where);
         }
-        if (!this.columns) {
-            return options?.limit
-                ? await queryBuilder.select('*').limit(options.limit)
-                : await queryBuilder.select('*');
+        if (!subClass.columns) {
+            if (options.limit) {
+                return (
+                    (await queryBuilder.select('*').limit(options.limit)) ||
+                    ([] as Array<Partial<T>>)
+                );
+            } else {
+                return (
+                    (await queryBuilder.select('*')) ||
+                    ([] as Array<Partial<T>> | undefined)
+                );
+            }
         }
-        if (!this.select) {
-            for (const item of this.columns) {
+        if (!subClass.select) {
+            for (const item of subClass.columns) {
                 queryBuilder.select(item.name);
             }
             return options?.limit
-                ? await queryBuilder.limit(options.limit)
-                : await queryBuilder;
+                ? ((await queryBuilder.limit(options.limit)) as Array<
+                      Partial<T>
+                  >)
+                : ((await queryBuilder) as Array<Partial<T>>) || [];
         }
-        if (this.select) {
-            for (const item of this.select) {
+        if (subClass.select) {
+            for (const item of subClass.select) {
                 queryBuilder.select(item);
             }
             return options?.limit
-                ? await queryBuilder.limit(options.limit)
-                : await queryBuilder;
+                ? (await queryBuilder.limit(options.limit)) ||
+                      ([] as Array<Partial<T>>)
+                : (await queryBuilder) || ([] as Array<Partial<T>>);
         }
+        return [];
     }
     static async getOne<T extends BaseModel>(
+        this: new () => T,
         options: IOptionQuery<T>
     ): Promise<Partial<T>> {
-        this.checkConfig();
-        const query = knex(this.config);
-        const queryBuilder = query(this.table);
+        const subClass = this as unknown as typeof BaseModel;
+        subClass.checkConfig();
+        const query = knex(subClass.config);
+        const queryBuilder = query(subClass.table);
         return options?.where
             ? await queryBuilder.where(options.where).first()
             : await queryBuilder.first();

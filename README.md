@@ -69,4 +69,76 @@ class Order extends BaseModel {
 }
   const orderData = await Orders.getOne({ where: { orderNumber: 10103 } });
   console.log(orderData);
+
+relation example
+@Entity('orders')
+export class Order extends BaseModel {
+    @Column()
+    orderNumber: number;
+
+    @Column()
+    orderDate: Date;
+
+    @Column()
+    requiredDate: Date;
+
+    @Column()
+    shippedDate?: Date;
+
+    @Column()
+    status: string;
+
+    @Column()
+    comments?: string;
+
+    @Column()
+    customerNumber: number;
+
+    @Column()
+    phone?: string;
+    static config = {
+        client: 'mysql2',
+        connection: {
+            host: '127.0.0.1',
+            port: 3306,
+            user: 'root',
+            password: 'root',
+            database: 'classicmodels',
+        },
+    };
+}
+@Entity('customers')
+class Customer extends BaseModel {
+    @Column()
+    customerName: string;
+    @Column()
+    customerNumber: number;
+    @Relations(Order, 'customerNumber', 'customerNumber')
+    orders: Order[];
+
+    static config = {
+        client: 'mysql2',
+        connection: {
+            host: '127.0.0.1',
+            port: 3306,
+            user: 'root',
+            password: 'root',
+            database: 'classicmodels',
+        },
+    };
+}
+const test = async () => {
+    // const orders = await Order.getAll({ limit: 2 });
+    // console.log('^^^^', orders);
+    const customers = await Customer.getAll({
+        relations: ['orders'],
+    });
+    console.log(customers.length);
+    console.log(
+        '%aaa%',
+        customers[0].customerNumber,
+        customers[0].orders[0].customerNumber
+    );
+};
+test();
 ```

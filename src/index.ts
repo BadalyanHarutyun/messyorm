@@ -1,6 +1,8 @@
 import knex, { Knex } from 'knex';
-import { IOptionQuery } from './option.interface';
+import { IOptionQuery } from './interfaces/option.interface';
 import 'reflect-metadata';
+import { IColumn } from './interfaces/column.interface';
+import { IRelations } from './interfaces/index.interface';
 function Column() {
     return function (target: object, propertyKey: string | symbol): void {
         const constructor = target.constructor as typeof BaseModel & {
@@ -26,6 +28,36 @@ function Column() {
         });
     };
 }
+function Relations(targetClass: object, column: string, targetColumn) {
+    return function (target: object, propertyKey: string): void {
+        const constructor = targetClass as typeof BaseModel & {
+            columns?: { name: string; type: string }[];
+        };
+        const insideCalledDecoratorConstructor =
+            target.constructor as typeof BaseModel;
+        console.log(
+            'constructor',
+            constructor,
+            targetClass,
+            target.constructor
+        );
+        // Initialize columns array if it doesn't exist
+
+        // Get the property type as a string
+        const columns = constructor.columns;
+        console.log(111111, propertyKey, columns);
+        if (constructor.relations === undefined) {
+            insideCalledDecoratorConstructor.relations = {};
+        }
+
+        insideCalledDecoratorConstructor.relations[propertyKey] = {
+            columns: columns,
+            column: column,
+            targetColumn: targetColumn,
+        };
+        console.log('$$$$', constructor);
+    };
+}
 
 function Entity(name?: string) {
     return function (target: Function): void {
@@ -42,8 +74,9 @@ function Entity(name?: string) {
 
 class BaseModel {
     static config: Knex.Config;
-    static columns: { name: string; type: string }[] | undefined;
+    static columns: Array<IColumn> | undefined;
     static select?: string[];
+    static relations?: IRelations;
     static table: string;
     static checkConfig(): void {
         if (!this.config) {
@@ -78,20 +111,80 @@ class BaseModel {
             for (const item of subClass.columns) {
                 queryBuilder.select(item.name);
             }
-            return options?.limit
-                ? ((await queryBuilder.limit(options.limit)) as Array<
-                      Partial<T>
-                  >)
-                : ((await queryBuilder) as Array<Partial<T>>) || [];
+            if (options?.limit) {
+                queryBuilder.limit(options.limit);
+            }
+
+            const data = (await queryBuilder) as Array<Partial<T>>;
+            if (options.relations && data.length) {
+                for (const el of data) {
+                    for (const relElement of options.relations) {
+                        const query = knex(subClass.config);
+                        const queryBuilder = query(relElement);
+                        const selectArr = subClass?.relations[relElement]
+                            ? subClass?.relations[relElement].columns.map(
+                                  (item) => item.name
+                              )
+                            : [];
+                        el[relElement as keyof T] = (await queryBuilder
+                            .select(selectArr)
+                            .where(
+                                subClass.relations[relElement].targetColumn,
+                                el[
+                                    subClass.relations[relElement]
+                                        .column as keyof T
+                                ]
+                            )) as T[keyof T];
+                    }
+                    // console.log(
+                    //     'el',
+                    //     el,
+                    //     options.relations,
+                    //     subClass.relations
+                    // );
+                }
+                return data;
+            }
+            return data;
         }
         if (subClass.select) {
             for (const item of subClass.select) {
                 queryBuilder.select(item);
             }
-            return options?.limit
-                ? (await queryBuilder.limit(options.limit)) ||
-                      ([] as Array<Partial<T>>)
-                : (await queryBuilder) || ([] as Array<Partial<T>>);
+            if (options.limit) {
+                queryBuilder.limit(options.limit);
+            }
+            const data = await queryBuilder;
+            if (options.relations && data.length) {
+                for (const el of data) {
+                    for (const relElement of options.relations) {
+                        const query = knex(subClass.config);
+                        const queryBuilder = query(relElement);
+                        const selectArr = subClass?.relations[relElement]
+                            ? subClass?.relations[relElement].columns.map(
+                                  (item) => item.name
+                              )
+                            : [];
+                        el[relElement as keyof T] = (await queryBuilder
+                            .select(selectArr)
+                            .where(
+                                subClass.relations[relElement].targetColumn,
+                                el[
+                                    subClass.relations[relElement]
+                                        .column as keyof T
+                                ]
+                            )) as T[keyof T];
+                    }
+                    // console.log(
+                    //     'el',
+                    //     el,
+                    //     options.relations,
+                    //     subClass.relations
+                    // );
+                }
+                return data;
+            }
+            return data;
         }
         return [];
     }
@@ -109,4 +202,4 @@ class BaseModel {
     }
 }
 
-export { BaseModel, Entity, Column };
+export { BaseModel, Entity, Column, Relations };

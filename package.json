@@ -1,6 +1,6 @@
 {
   "name": "messyorm",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "Node.js orm",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -28,6 +28,7 @@
   "homepage": "https://github.com/BadalyanHarutyun/messyorm#readme",
   "dependencies": {
     "knex": "^3.1.0",
+    "lodash": "^4.17.21",
     "reflect-metadata": "^0.2.2"
   },
   "peerDependenciesMeta": {

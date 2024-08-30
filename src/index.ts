@@ -28,7 +28,7 @@ function Column() {
         });
     };
 }
-function Relations(targetClass: object, column: string, targetColumn) {
+function Relations(targetClass: object, column: string, targetColumn: string) {
     return function (target: object, propertyKey: string): void {
         const constructor = targetClass as typeof BaseModel & {
             columns?: { name: string; type: string }[];

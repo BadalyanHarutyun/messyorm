@@ -196,9 +196,36 @@ class BaseModel {
         subClass.checkConfig();
         const query = knex(subClass.config);
         const queryBuilder = query(subClass.table);
-        return options?.where
-            ? await queryBuilder.where(options.where).first()
-            : await queryBuilder.first();
+        if (options?.where) {
+            queryBuilder.where(options.where);
+        }
+        const data = await queryBuilder.first();
+        if (options.relations && data) {
+            for (const relElement of options.relations) {
+                const query = knex(subClass.config);
+                const queryBuilder = query(relElement);
+                const selectArr = subClass?.relations[relElement]
+                    ? subClass?.relations[relElement].columns.map(
+                          (item) => item.name
+                      )
+                    : [];
+                data[relElement as keyof T] = (await queryBuilder
+                    .select(selectArr)
+                    .where(
+                        subClass.relations[relElement].targetColumn,
+                        data[subClass.relations[relElement].column as keyof T]
+                    )) as T[keyof T];
+            }
+            // console.log(
+            //     'el',
+            //     el,
+            //     options.relations,
+            //     subClass.relations
+            // );
+
+            return data;
+        }
+        return data;
     }
 }
 

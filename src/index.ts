@@ -1,9 +1,12 @@
 import knex, { Knex } from 'knex';
 import { IOptionQuery } from './interfaces/option.interface';
 import 'reflect-metadata';
-import { IColumn } from './interfaces/column.interface';
+import {
+    IColumn,
+    IColumnDecoratorArgument,
+} from './interfaces/column.interface';
 import { IRelations } from './interfaces/index.interface';
-function Column() {
+function Column(columnOption?: IColumnDecoratorArgument) {
     return function (target: object, propertyKey: string | symbol): void {
         const constructor = target.constructor as typeof BaseModel & {
             columns?: { name: string; type: string }[];
@@ -20,7 +23,12 @@ function Column() {
             target,
             propertyKey
         );
-
+        if (columnOption?.primary) {
+            constructor.primaryColumn = {
+                name: propertyKey as string,
+                type: propertyType.name, // Store the type name
+            };
+        }
         // Add column metadata
         constructor.columns.push({
             name: propertyKey as string,
@@ -30,9 +38,7 @@ function Column() {
 }
 function Relations(targetClass: object, column: string, targetColumn: string) {
     return function (target: object, propertyKey: string): void {
-        const constructor = targetClass as typeof BaseModel & {
-            columns?: { name: string; type: string }[];
-        };
+        const constructor = targetClass as typeof BaseModel;
         const insideCalledDecoratorConstructor =
             target.constructor as typeof BaseModel;
         console.log(
@@ -54,6 +60,7 @@ function Relations(targetClass: object, column: string, targetColumn: string) {
             columns: columns,
             column: column,
             targetColumn: targetColumn,
+            targetClass: targetClass as typeof BaseModel,
         };
         console.log('$$$$', constructor);
     };
@@ -78,6 +85,7 @@ class BaseModel {
     static select?: string[];
     static relations?: IRelations;
     static table: string;
+    static primaryColumn: IColumn;
     static checkConfig(): void {
         if (!this.config) {
             throw new Error('messyorm need config (it is same as knex config)');
@@ -120,7 +128,13 @@ class BaseModel {
                 for (const el of data) {
                     for (const relElement of options.relations) {
                         const query = knex(subClass.config);
-                        const queryBuilder = query(relElement);
+                        console.log(
+                            'subClass.relations[relElement].targetClass.table',
+                            subClass.relations[relElement].targetClass.table
+                        );
+                        const queryBuilder = query(
+                            subClass.relations[relElement].targetClass.table
+                        );
                         const selectArr = subClass?.relations[relElement]
                             ? subClass?.relations[relElement].columns.map(
                                   (item) => item.name
@@ -159,7 +173,10 @@ class BaseModel {
                 for (const el of data) {
                     for (const relElement of options.relations) {
                         const query = knex(subClass.config);
-                        const queryBuilder = query(relElement);
+
+                        const queryBuilder = query(
+                            subClass.relations[relElement].targetClass.table
+                        );
                         const selectArr = subClass?.relations[relElement]
                             ? subClass?.relations[relElement].columns.map(
                                   (item) => item.name
@@ -203,7 +220,9 @@ class BaseModel {
         if (options.relations && data) {
             for (const relElement of options.relations) {
                 const query = knex(subClass.config);
-                const queryBuilder = query(relElement);
+                const queryBuilder = query(
+                    subClass.relations[relElement].targetClass.table
+                );
                 const selectArr = subClass?.relations[relElement]
                     ? subClass?.relations[relElement].columns.map(
                           (item) => item.name

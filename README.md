@@ -139,6 +139,10 @@ const test = async () => {
         customers[0].customerNumber,
         customers[0].orders[0].customerNumber
     );
+    const affected=await Order.updateOne({where:{orderNumber:11114,},data:{status:'tttttt'}})
+    console.log(affected);
+      const deleted=await Order.delete({where:{orderNumber:11114,}})
+    console.log(deleted);
 };
 test();
 ```

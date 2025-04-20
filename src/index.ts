@@ -246,6 +246,64 @@ class BaseModel {
         }
         return data;
     }
+    static async delete<T extends BaseModel>(
+        this: new () => T,
+        options: IOptionQuery<T>
+    ): Promise<number> {
+        const subClass = this as unknown as typeof BaseModel;
+        subClass.checkConfig();
+
+        const query = knex(subClass.config);
+        const queryBuilder = query(subClass.table);
+
+        if (options?.where) {
+            queryBuilder.where(options.where);
+        } else {
+            throw new Error("Delete operation requires a 'where' clause.");
+        }
+
+        const affectedRows = await queryBuilder.delete();
+        return affectedRows; // returns number of deleted rows
+    }
+    // static async save<T extends BaseModel>( //TODO: this must be changed that not return 0
+    //     this: new () => T,
+    //     data: Partial<T>
+    // ): Promise<T> {
+    //     const subClass = this as unknown as typeof BaseModel;
+    //     subClass.checkConfig();
+
+    //     const query = knex(subClass.config);
+    //     const insertData: Partial<T> = {};
+    //     for (const key in data) {
+    //         if (data[key] !== undefined && data[key] !== null) {
+    //             insertData[key] = data[key];
+    //         }
+    //     }
+
+    //     const inserDataArr = await query(subClass.table).insert(insertData);
+    //     return inserDataArr as any as T;
+    // }
+    static async updateOne<T extends BaseModel>(
+        this: new () => T,
+        options: {
+            where: Partial<T>;
+            data: Partial<T>;
+        }
+    ): Promise<number> {
+        const subClass = this as unknown as typeof BaseModel;
+        subClass.checkConfig();
+
+        if (!options.where || !options.data) {
+            throw new Error("Both 'where' and 'data' are required for update.");
+        }
+
+        const query = knex(subClass.config);
+        const affectedRows = await query(subClass.table)
+            .where(options.where)
+            .update(options.data);
+
+        return affectedRows; // number of affected rows
+    }
 }
 
 export { BaseModel, Entity, Column, Relations };

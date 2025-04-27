@@ -99,11 +99,11 @@ export class Order extends BaseModel {
     static config = {
         client: 'mysql2',
         connection: {
-            host: '127.0.0.1',
+           host: '127.0.0.1',
             port: 3306,
-            user: 'root',
-            password: 'root',
-            database: 'classicmodels',
+            user: 'your_username',
+            password: 'your_password',
+            database: 'your_database',
         },
     };
 }
@@ -119,11 +119,11 @@ class Customer extends BaseModel {
     static config = {
         client: 'mysql2',
         connection: {
-            host: '127.0.0.1',
+           host: '127.0.0.1',
             port: 3306,
-            user: 'root',
-            password: 'root',
-            database: 'classicmodels',
+            user: 'your_username',
+            password: 'your_password',
+            database: 'your_database',
         },
     };
 }

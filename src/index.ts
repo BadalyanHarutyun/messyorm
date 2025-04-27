@@ -304,6 +304,31 @@ class BaseModel {
 
         return affectedRows; // number of affected rows
     }
+    //TODO: next publish will change with primary key logic
+    static async insertAndFetch<T extends BaseModel>(
+        this: new () => T,
+        data: Partial<T>
+    ): Promise<Partial<T>> {
+        const subClass = this as unknown as typeof BaseModel;
+        subClass.checkConfig();
+
+        if (!data || Object.keys(data).length === 0) {
+            throw new Error("'data' is required for insert.");
+        }
+
+        const query = knex(subClass.config);
+
+        // Insert the data
+        await query(subClass.table).insert(data);
+        const insertedRow = await query(subClass.table).where(data).first();
+        if (!insertedRow) {
+            throw new Error(
+                'Insert seems successful but fetching inserted row failed.'
+            );
+        }
+
+        return insertedRow as Partial<T>;
+    }
 }
 
 export { BaseModel, Entity, Column, Relations };

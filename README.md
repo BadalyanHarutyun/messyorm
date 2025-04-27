@@ -99,11 +99,11 @@ export class Order extends BaseModel {
     static config = {
         client: 'mysql2',
         connection: {
-            host: '127.0.0.1',
+           host: '127.0.0.1',
             port: 3306,
-            user: 'root',
-            password: 'root',
-            database: 'classicmodels',
+            user: 'your_username',
+            password: 'your_password',
+            database: 'your_database',
         },
     };
 }
@@ -119,11 +119,11 @@ class Customer extends BaseModel {
     static config = {
         client: 'mysql2',
         connection: {
-            host: '127.0.0.1',
+           host: '127.0.0.1',
             port: 3306,
-            user: 'root',
-            password: 'root',
-            database: 'classicmodels',
+            user: 'your_username',
+            password: 'your_password',
+            database: 'your_database',
         },
     };
 }
@@ -139,6 +139,10 @@ const test = async () => {
         customers[0].customerNumber,
         customers[0].orders[0].customerNumber
     );
+    const affected=await Order.updateOne({where:{orderNumber:11114,},data:{status:'tttttt'}})
+    console.log(affected);
+      const deleted=await Order.delete({where:{orderNumber:11114,}})
+    console.log(deleted);
 };
 test();
 ```

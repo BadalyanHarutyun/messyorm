@@ -41,17 +41,17 @@ function Relations(targetClass: object, column: string, targetColumn: string) {
         const constructor = targetClass as typeof BaseModel;
         const insideCalledDecoratorConstructor =
             target.constructor as typeof BaseModel;
-        console.log(
-            'constructor',
-            constructor,
-            targetClass,
-            target.constructor
-        );
+        // console.log(
+        //     'constructor',
+        //     constructor,
+        //     targetClass,
+        //     target.constructor
+        // );
         // Initialize columns array if it doesn't exist
 
         // Get the property type as a string
         const columns = constructor.columns;
-        console.log(111111, propertyKey, columns);
+        // console.log(111111, propertyKey, columns);
         if (constructor.relations === undefined) {
             insideCalledDecoratorConstructor.relations = {};
         }
@@ -62,7 +62,7 @@ function Relations(targetClass: object, column: string, targetColumn: string) {
             targetColumn: targetColumn,
             targetClass: targetClass as typeof BaseModel,
         };
-        console.log('$$$$', constructor);
+        // console.log('$$$$', constructor);
     };
 }
 
@@ -93,12 +93,18 @@ class BaseModel {
     }
     static async getAll<T extends BaseModel>(
         this: new () => T,
-        options: IOptionQuery<T>
+        options?: IOptionQuery<T>
     ): Promise<Array<Partial<T>>> {
         const subClass = this as unknown as typeof BaseModel;
         subClass.checkConfig();
         const query = knex(subClass.config);
         const queryBuilder = query(subClass.table);
+        if (options === undefined) {
+            return (
+                (await queryBuilder.select('*')) ||
+                ([] as Array<Partial<T>> | undefined)
+            );
+        }
         if (options.where) {
             queryBuilder.where(options.where);
         }
@@ -128,10 +134,10 @@ class BaseModel {
                 for (const el of data) {
                     for (const relElement of options.relations) {
                         const query = knex(subClass.config);
-                        console.log(
-                            'subClass.relations[relElement].targetClass.table',
-                            subClass.relations[relElement].targetClass.table
-                        );
+                        // console.log(
+                        //     'subClass.relations[relElement].targetClass.table',
+                        //     subClass.relations[relElement].targetClass.table
+                        // );
                         const queryBuilder = query(
                             subClass.relations[relElement].targetClass.table
                         );
@@ -304,14 +310,16 @@ class BaseModel {
 
         return affectedRows; // number of affected rows
     }
-    //TODO: next publish will change with primary key logic
+
     static async insertAndFetch<T extends BaseModel>(
         this: new () => T,
         data: Partial<T>
     ): Promise<Partial<T>> {
         const subClass = this as unknown as typeof BaseModel;
         subClass.checkConfig();
-
+        if (!subClass.primaryColumn) {
+            throw new Error('Schema must have primary key');
+        }
         if (!data || Object.keys(data).length === 0) {
             throw new Error("'data' is required for insert.");
         }
@@ -319,16 +327,24 @@ class BaseModel {
         const query = knex(subClass.config);
 
         // Insert the data
-        await query(subClass.table).insert(data);
-        const insertedRow = await query(subClass.table).where(data).first();
-        if (!insertedRow) {
+        const insertRaw = await query(subClass.table).insert(data);
+        if (insertRaw.length && insertRaw[0] !== 0) {
+            data[subClass.primaryColumn.name] = insertRaw[0];
+        }
+        const insertedFetch = await query(subClass.table)
+            .where({
+                [subClass.primaryColumn.name]:
+                    data[subClass.primaryColumn.name],
+            })
+            .first();
+        if (!insertedFetch) {
             throw new Error(
                 'Insert seems successful but fetching inserted row failed.'
             );
         }
 
-        return insertedRow as Partial<T>;
+        return insertedFetch as Partial<T>;
     }
 }
 
-export { BaseModel, Entity, Column, Relations };
+export { BaseModel, Entity, Column, Relations, knex };

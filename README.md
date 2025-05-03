@@ -48,7 +48,7 @@ you can not include columns static fields array it will get all columns
 second example
 @Entity()
 class Order extends BaseModel {
-    @Column()
+    @Column({primary:true})
     orderNumber:string
 
 
@@ -73,7 +73,7 @@ class Order extends BaseModel {
 relation example
 @Entity('orders')
 export class Order extends BaseModel {
-    @Column()
+    @Column({primary:true})
     orderNumber: number;
 
     @Column()
@@ -109,7 +109,7 @@ export class Order extends BaseModel {
 }
 @Entity('customers')
 class Customer extends BaseModel {
-    @Column()
+    @Column({primary:true})
     customerName: string;
     @Column()
     customerNumber: number;
@@ -143,6 +143,9 @@ const test = async () => {
     console.log(affected);
       const deleted=await Order.delete({where:{orderNumber:11114,}})
     console.log(deleted);
+     const inserted=await Order.insertAndFetch({orderNumber:12310
+        ,customerNumber:103,status:'deliver'})
+     console.log(inserted);
 };
 test();
 ```
